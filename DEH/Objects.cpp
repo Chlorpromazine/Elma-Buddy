@@ -178,11 +178,8 @@ void objects::newLocation(pos newPos)
 void objects::displayObjectNumbers()
 {
 
-	int bikeX = 0x00453A20;
-	int bikeY = 0x00453A28;
-
 	std::string displayString;
-	//todo: add gravity on apple if any
+
 	for (int i = 0; i < allObjects.size(); i++)
 	{
 		char* objNumberName = new char[20];
@@ -194,7 +191,7 @@ void objects::displayObjectNumbers()
 		//position of object minus bike position, add window width/height to place in center.
 		int posX = (int)std::round(((double)allObjects[i]->x - *(double*)Kuski::kus.bikePosX) * 48) + Addr.WindowWidth / 2;
 		int posY = (int)std::round(((double)allObjects[i]->y - *(double*)Kuski::kus.bikePosY) * 48) + Addr.WindowHeight / 2;
-
+		
 		displayString = std::to_string(i);
 		if (allObjects[i]->active == 0) displayString += "*";
 
