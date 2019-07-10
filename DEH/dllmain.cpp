@@ -19,7 +19,6 @@ bool run;
 MSG msg = {0};
 
 
-
 //__declspec(dllimport)  DWORD WINAPI mainLoop(LPVOID lpParam);
 
 DWORD WINAPI mainLoop(LPVOID lpParam)
@@ -93,12 +92,13 @@ BOOL APIENTRY DllMain( HMODULE hModule,
                        LPVOID lpReserved
 					 )
 {
-	
+
 	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
 		RedirectIOToConsole(); //debug
 
+		
 		//Create the main loop thread
 		CreateThread(NULL, 0, mainLoop, 0, 0, NULL);
 

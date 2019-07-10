@@ -1,5 +1,6 @@
 #pragma once
 
+//Approximate colors of the default pallet/LGR.
 class Color {
 	
 public:

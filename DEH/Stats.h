@@ -16,7 +16,7 @@ public:
 	bool displayAppleCounter = true;
 	bool displayDeathCounter = true;
 	bool displayAppleGravity = true;
-	bool displayAppleTaken = true;
+	bool displayTimeAppleTaken = true;
 
 
 	int currentLevelFinish = 0;

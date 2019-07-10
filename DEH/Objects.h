@@ -1,19 +1,24 @@
 #pragma once
 #include "DEH.h"
 
-using namespace std;
-
 
 class objects {
+
+private:
+	int curObject;
+	char oldLev[8];
 
 public:
 	static objects obj;
 	objects();
 
 	struct pos {
-		 int x;
-		 int y;
+		double x;
+		 double y;
 	};
+
+	enum objType{ Flower = 1, Apple, Killer, Start };
+
 #pragma pack(push, 1)
 	struct objStruct{
 		double x;
@@ -28,19 +33,23 @@ public:
 		bool active;
 	};
 #pragma pack(pop)
-	vector<objStruct*> allObjects;
+
+	struct newProp {
+		double bestTime = 0;
+		std::string bestTimeStr;
+	};
+
+	std::vector<objStruct*> allObjects;
+	std::unordered_map<int, newProp> allObjectsNewProperties;
+
 	bool reload;
 
 
-private:
-	int curObject;
-	char oldLev[8];
-
-public:
 	void changeObject(int curObj);
 	void objectActive(int curObj, bool active);
 	void nextObject();
 	void moveObject(int);
+
 	pos getLocation();
 	pos getLocation(int obj);
 	
@@ -48,6 +57,9 @@ public:
 
 	void displayObjectNumbers();
 
-	
+	void displayObjectArrow();
 
+	int getClosestObject(objType type);
+
+	
 };

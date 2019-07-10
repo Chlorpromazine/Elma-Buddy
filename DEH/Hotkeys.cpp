@@ -6,10 +6,10 @@ Hotkeys Hotkeys::HK;
 
 HHOOK _hook;
 
-
 //Keyboard callback function
 LRESULT __stdcall HookCallback(int nCode, WPARAM wParam, LPARAM lParam)
 {
+	
 	if (nCode > 0)
 	{
 
@@ -28,23 +28,26 @@ LRESULT __stdcall HookCallback(int nCode, WPARAM wParam, LPARAM lParam)
 	return CallNextHookEx(_hook, nCode, wParam, lParam);
 }
 
+
 //Hook the keyboard
 void Hotkeys::SetHook()
 {
-	HINSTANCE hInstance = LoadLibrary("User32");
+	//Hopefully this is done right
+	//We get the hInstance from dinput.dll then get the main threadID from the main HWND saved from a variable that Milagro made.
+	//We then add a keyboard hook to that.
+	HMODULE dInputMod = LoadLibrary("dinput.dll");
 	
-	if (!(_hook = SetWindowsHookEx(WH_KEYBOARD, HookCallback, hInstance, 0)))
+	if (!(_hook = SetWindowsHookEx(WH_KEYBOARD, HookCallback, dInputMod, (DWORD)GetWindowThreadProcessId(Addr.mainHWND, NULL))))
 	{
 		std::cout << "Failed to install hook!" << std::endl;
 	}
-	
 }
 
 void Hotkeys::ReleaseHook()
 {
 	UnhookWindowsHookEx(_hook);
 }
-//todo: fix bug, if alt+tabbed and pressed any of the keys below, game softlocks
+
 void Hotkeys::processKeysInLev(WPARAM wParam)
 {
 	
@@ -111,6 +114,14 @@ void Hotkeys::processKeysInLev(WPARAM wParam)
 				Menu::menu.exitSubMenu();
 
 			break;
+
+		case  0x53: //s
+			if (GetKeyState(VK_MENU) & 0x8000) //alt
+			{
+				Kuski::kus.enableKuskiShadow = !Kuski::kus.enableKuskiShadow;
+			}
+			break;
+
 		//case VK_ESCAPE:
 		//	//Exit menu without saving
 		//	draw::dd.optionsUIactive = false;

@@ -8,7 +8,9 @@ void loadHooks()
 
 	//Force change LGR
 	JumpPatch((BYTE*)0x00422DA9, (BYTE*)&changeLRGinject, 0);
-
+	JumpPatch((BYTE*)0x0042586B, (BYTE*)&changeToNewLevel, 0);
+	JumpPatch((BYTE*)0x00422B06, (BYTE*)&changeToNewLGR, 0);
+	
 	//Hook before elma/EOL keyboard inputs are processed.
 	JumpPatch((BYTE*)0x0043A222, (BYTE*)&keyboardInject, 0);
 
@@ -19,6 +21,15 @@ void loadHooks()
 
 	//JumpPatch((BYTE*)0x0042E70E, (BYTE*)&collisionObject, 0);
 
+	JumpPatch((BYTE*)0x0042D5AE, (BYTE*)&getTimeObject, 0);
+
+
+	//on exit level
+	JumpPatch((BYTE*)0x0049D153, (BYTE*)&exitToMenuInt, 0);
+	JumpPatch((BYTE*)0x0049D173, (BYTE*)&exitToMenuExt, 0);
+	
+
+
 	Debug::debug.addDebugInfoItem(std::string("Loaded Hooks"));
 }
 
@@ -28,6 +39,10 @@ void __declspec(naked) drawInject()
 		
 	draw::dd.drawAllObjectsOnScreen();
 	objects::obj.displayObjectNumbers();
+	objects::obj.displayObjectArrow();
+	
+	Kuski::kus.saveCurrentRide();
+	Kuski::kus.shadowKuski();
 
 	__asm {
 
@@ -53,6 +68,66 @@ void __declspec(naked) changeLRGinject()
 		push 0x0000A280
 		jmp jmpChangeLGR
 	}
+}
+
+//Compares to see if the level is the same being played or not.
+void __declspec(naked) changeToNewLevel()
+{
+	
+	__asm {
+		call callNewLevel
+		pushad
+	}
+
+	//Force LGR change
+	if (Level::lev.LGRchanged) {
+		__asm {
+			popad
+			mov eax, 1
+		}
+	}
+	else
+	{
+		__asm {
+			popad
+		}
+	}
+
+	__asm{
+		jmp jmpNewLevel
+	}
+}
+
+//Compares the current LGR with the selected level LGR (only called when changeToNewLevel() is called)
+void __declspec(naked) changeToNewLGR()
+{
+	
+	__asm {
+		call callNewLGR
+		pushad
+	}
+
+	//Force LGR change
+	if (Level::lev.LGRchanged) {
+		Level::lev.LGRchanged = false;
+		__asm {
+			popad
+			mov eax, 1
+		}
+	}
+	else
+	{
+		__asm {
+			popad
+		}
+	}
+	
+	__asm{
+		jmp jmpNewLGR
+	}
+
+	
+
 }
 
 //Placed right before elma/EOL keyboard functions are called
@@ -96,7 +171,7 @@ void __declspec(naked) touchApple()
 {
 	//To update the apple counter
 	draw::dd.statsChanged = true;
-
+	
 	__asm {
 		mov[eax + 0x2C], 00000000
 		jmp touchAppleEnd
@@ -105,7 +180,6 @@ void __declspec(naked) touchApple()
 
 void test324(int objAddr)
 {
-	cout << objAddr << endl;
 	objects::obj.allObjects.push_back((objects::objStruct*)objAddr);
 }
 /*
@@ -130,7 +204,6 @@ void  __declspec(naked) getAllObjects()
 	}
 	
 	test324(objAddr);
-	//Debug::debug.addDebugInfoItem(Debug::debugInfo(std::to_string(objAddr)));
 	
 
 	__asm {
@@ -147,9 +220,11 @@ void  __declspec(naked) getAllObjects()
 void __declspec(naked) resetObjects()
 {
 	__asm {pusha}
-	//cout << "Objects cleared" << endl;
+
 	//Clear all of the objects for the previous level.
 	objects::obj.allObjects.clear();
+	objects::obj.allObjectsNewProperties.clear();
+	Kuski::kus.enterNewLevel();
 
 	__asm {
 		popa
@@ -158,29 +233,79 @@ void __declspec(naked) resetObjects()
 	}
 }
 
-////injected function which detects when you hit an object that's activated (flower/killer/apple/floor)
-////start position are default deactivated, same with apples that you already touched
-//void __declspec(naked) collisionObject()
-//{
-//	__asm {
-//		push ebx
-//		mov ebx, 0x00487044
-//		mov[ebx], eax
-//		pop ebx
-//		//read which object id you touched.
-//		mov objID, edx
-//
-//	}
-//
-//	
-//	//add function(s) here
-//	
-//	//debugObjGrav(objID);
-//	//teleport(objID);
-//	//objects::obj.gravIntensity(objID);
-//
-//	//go back to elma
-//	__asm {
-//		jmp objCollisionEnd
-//	}
-//}
+//injected function which detects when you hit an object that's activated (flower/killer/apple/floor)
+//start position are default deactivated, same with apples that you already touched
+void __declspec(naked) collisionObject()
+{
+	__asm {
+		push ebx
+		mov ebx, 0x00487044
+		mov[ebx], eax
+		pop ebx
+		//read which object id you touched.
+		mov objID, edx
+
+	}
+
+	
+	//add function(s) here
+	
+	//debugObjGrav(objID);
+	//teleport(objID);
+	//objects::obj.gravIntensity(objID);
+
+	//go back to elma
+	__asm {
+		jmp objCollisionEnd
+	}
+}
+
+void __declspec(naked) getTimeObject()
+{
+	
+	__asm {
+		mov esi, ecx
+		mov timeAddrTmp, esi
+		xor eax, eax
+		push edi
+		pushad
+	}
+
+	Level::lev.timeAddress = timeAddrTmp;
+
+	__asm {
+
+		popad
+		jmp jmpTimeEnd
+	}
+}
+
+void __declspec(naked) exitToMenuInt()
+{
+
+	__asm {pushad}
+
+	Kuski::kus.onExitLevel();
+
+	__asm {
+
+		popad
+		jmp jmpExitLevInt
+
+	}
+}
+
+void __declspec(naked) exitToMenuExt()
+{
+
+	__asm {pushad}
+
+	Kuski::kus.onExitLevel();
+
+	__asm {
+
+		popad
+		jmp jmpExitLevExt
+
+	}
+}

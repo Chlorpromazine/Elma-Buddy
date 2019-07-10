@@ -38,7 +38,7 @@ public:
 		AppleCounter,
 		DeathCounter,
 		ShowGravity,
-		ApplesTaken
+		TimeAppleTaken
 	};
 
 	enum class MenuItemsID {
@@ -53,7 +53,7 @@ public:
 				AppleCounter,
 				DeathCounter,
 				ShowGravity,
-				ApplesTaken
+				TimeAppleTaken
 		
 	};
 

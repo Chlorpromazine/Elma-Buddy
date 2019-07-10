@@ -76,3 +76,32 @@ int Level::findIndexLGR(std::string LGRname)
 	return pos;
 }
 
+double Level::getTimeInLevel()
+{
+	
+	return *(int*)(timeAddress+0x38) / *(double*)framesPerSecond;
+}
+
+std::string Level::decimalTimeToStr(double timeDec)
+{
+	char tmpTimeDesplayStr[15];
+	int minStr;
+	int secStr;
+	int msStr;
+	double tmp;
+
+	minStr = (int)timeDec / 60;
+	secStr = (int)timeDec % 60;
+	msStr = (int)roundf(std::modf(timeDec, &tmp) * 100);
+
+	sprintf(tmpTimeDesplayStr, "%02i:%02i:%02i", minStr, secStr, msStr);
+
+	return tmpTimeDesplayStr;
+}
+
+//Gets the current level name, works in replay.
+std::string Level::getLevelName()
+{
+	//Can't convert to string directly?
+	return (std::string)(char*)LevName;
+}

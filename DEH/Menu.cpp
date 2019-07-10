@@ -56,7 +56,7 @@ void Menu::initMenu()
 	newsubMenuItem->parent->subMenu->push_back(newsubMenuItem);
 		
 	//Show apples taken (for apple battle)
-	newsubMenuItem = createMenuItem(newsubMenuItem->parent, MenuItemsID::ApplesTaken, std::string("Apples Taken"), MenuValueID::ApplesTaken, menuValueType::b, false);
+	newsubMenuItem = createMenuItem(newsubMenuItem->parent, MenuItemsID::TimeAppleTaken, std::string("Time of Apples Taken"), MenuValueID::TimeAppleTaken, menuValueType::b, false);
 	newsubMenuItem->parent->subMenu->push_back(newsubMenuItem);
 
 
@@ -202,12 +202,13 @@ void Menu::saveSettings()
 			break;
 		case MenuValueID::ChangeLGR:
 			Level::lev.LGRselected = option.second;
+			Level::lev.LGRchanged = true;
 			break;
 		case MenuValueID::ShowGravity:
 			Stats::stats.displayAppleGravity = option.second;
 			break;
-		case MenuValueID::ApplesTaken:
-			Stats::stats.displayAppleTaken = option.second;
+		case MenuValueID::TimeAppleTaken:
+			Stats::stats.displayTimeAppleTaken = option.second;
 			break;
 		}
 	}

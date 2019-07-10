@@ -15,7 +15,6 @@ objects::objects() {
 	
 }
 
-int tmpAddr;
 
 //unused
 /*
@@ -115,16 +114,16 @@ void objects::moveObject(int dir)
 
 		switch (dir) {
 		case 0: //Up
-			position.y += 1;
+			position.y++;
 			break;
 		case 1: //Down
-			position.y -= 1;
+			position.y--;
 			break;
 		case 2: //Left
-			position.x -= 1;
+			position.x--;
 			break;
 		case 3: //Right
-			position.x += 1;
+			position.x++;
 			break;
 		}
 
@@ -165,11 +164,11 @@ objects::pos objects::getLocation(int obj)
 void objects::newLocation(pos newPos)
 {
 	//copy object location x
-	//MemPatchInt((BYTE*)allObjects[curObject].x, &newPos.x, 4);
-
+	allObjects[curObject]->x = newPos.x;
+	
 	//copy object location y
-	//MemPatchInt((BYTE*)allObjects[curObject].y, &newPos.y, 4);
-
+	allObjects[curObject]->y = newPos.y;
+	
 }
 
 /*
@@ -178,27 +177,41 @@ void objects::newLocation(pos newPos)
 void objects::displayObjectNumbers()
 {
 
-	std::string displayString;
-
 	for (int i = 0; i < allObjects.size(); i++)
 	{
-		char* objNumberName = new char[20];
+		char* objTimeName = new char[20];
 		char* gravName = new char[20];
 
-		sprintf(objNumberName, "objectNumber%d", i);
+		sprintf(objTimeName, "objectTime%d", i);
 		sprintf(gravName, "objectGrav%d", i);
 
+		//todo: change 48 with elma varible for screen size
 		//position of object minus bike position, add window width/height to place in center.
 		int posX = (int)std::round(((double)allObjects[i]->x - *(double*)Kuski::kus.bikePosX) * 48) + Addr.WindowWidth / 2;
 		int posY = (int)std::round(((double)allObjects[i]->y - *(double*)Kuski::kus.bikePosY) * 48) + Addr.WindowHeight / 2;
 		
-		displayString = std::to_string(i);
-		if (allObjects[i]->active == 0) displayString += "*";
+		//Get the new time of the apple taken
+		if (Stats::stats.displayTimeAppleTaken && allObjects[i]->active == 0 && allObjects[i]->type == objType::Apple)
+		{
+			
+			double tmpBestTime = Level::lev.getTimeInLevel();
+			if (tmpBestTime < allObjectsNewProperties[i].bestTime || allObjectsNewProperties[i].bestTime == 0.0f)
+			{
+				allObjectsNewProperties[i].bestTime = tmpBestTime;
+				allObjectsNewProperties[i].bestTimeStr = Level::lev.decimalTimeToStr(allObjectsNewProperties[i].bestTime);
+			}
+		}
 
-		if (Stats::stats.displayAppleTaken)
-			draw::dd.createText(objNumberName, displayString, posX, posY, 999, "");
+		//display the time of the apple taken if present.
+		if (Stats::stats.displayTimeAppleTaken && allObjectsNewProperties[i].bestTime != 0.0f )
+		{
+			draw::dd.createText(objTimeName, allObjectsNewProperties[i].bestTimeStr, posX - 20, posY, 999, "");
+		}
 
-		if (Stats::stats.displayAppleGravity) {
+		
+		//display the gravity of each apple.
+		if (Stats::stats.displayAppleGravity && allObjects[i]->active == 1)
+		{
 			switch (allObjects[i]->gravity)
 			{
 			case 0:
@@ -219,5 +232,60 @@ void objects::displayObjectNumbers()
 				break;
 			}
 		}
+		else
+		{
+			draw::dd.createText(gravName, std::string(""), posX, posY - 15, 999, "");
+		}
+		
 	}
 }
+
+void objects::displayObjectArrow() 
+{
+	//display arrow to closest apple/flower
+	int closestApple = objects::obj.getClosestObject(objects::objType::Apple);
+
+	if (closestApple == -1) draw::dd.deleteObjectFromArray("closestApple");
+	if (closestApple != -1)
+		draw::dd.createLine("closestApple", Addr.WindowWidth / 2, Addr.WindowHeight / 2,
+		(objects::obj.allObjects[closestApple]->x - *(double*)Kuski::kus.bikePosX) * 48 + Addr.WindowWidth / 2,
+			(objects::obj.allObjects[closestApple]->y - *(double*)Kuski::kus.bikePosY) * 48 + Addr.WindowHeight / 2,
+			Colors.Red, draw::drawType::LineArrow, 200);
+
+	int closestFlower = objects::obj.getClosestObject(objects::objType::Flower);
+
+	if (closestFlower == -1) draw::dd.deleteObjectFromArray("closestFlower");
+	if (closestFlower != -1)
+		draw::dd.createLine("closestFlower", Addr.WindowWidth / 2, Addr.WindowHeight / 2,
+		(objects::obj.allObjects[closestFlower]->x - *(double*)Kuski::kus.bikePosX) * 48 + Addr.WindowWidth / 2,
+			(objects::obj.allObjects[closestFlower]->y - *(double*)Kuski::kus.bikePosY) * 48 + Addr.WindowHeight / 2,
+			Colors.White, draw::drawType::LineArrow, 200);
+}
+int objects::getClosestObject(objType type)
+{
+	double closestDist = 9999999;
+	double currentDist = 0;
+	int closestApple = -1;
+	
+
+	for (int i = 0; i < allObjects.size(); i++) 
+	{
+		//Must be same type and active
+		if (allObjects[i]->type != type) continue;
+		if (allObjects[i]->active == false) continue;
+
+		//pythagore dist
+		currentDist = sqrt((allObjects[i]->x - *(double*)Kuski::kus.bikePosX) * (allObjects[i]->x - *(double*)Kuski::kus.bikePosX)
+						 + (allObjects[i]->y - *(double*)Kuski::kus.bikePosY) * (allObjects[i]->y - *(double*)Kuski::kus.bikePosY));
+		
+		if (closestDist > currentDist)
+		{
+			closestDist = currentDist;
+			closestApple = i;
+		}
+
+	}
+	
+	return closestApple;
+}
+

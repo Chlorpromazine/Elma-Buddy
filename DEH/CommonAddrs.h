@@ -22,6 +22,7 @@ public:
 	int WindowHeight = *(int*)0x004495EC;
 	int WindowWidth = *(int*)0x004495E8;
 
+	HWND mainHWND = *(HWND*)0x0048df6c;
 
 } static Addr;
 
