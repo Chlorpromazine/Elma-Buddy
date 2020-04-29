@@ -3,13 +3,14 @@
 
 class commonAddresses {
 public:
+
 	std::string IPtoS(int i);
 	
 	
 
 	//Collision (objects):
 	//Returns the object ID being collided with.
-	int ObjectIDCollided = *(int*)0x004869E0;
+	int ObjectIDCollided = 0x004869E0;
 
 	//Returns the current screen that you're on.
 	int CurrentScreen = 0x004a1404;
@@ -19,10 +20,12 @@ public:
 
 
 	//Window height/width
-	int WindowHeight = *(int*)0x004495EC;
-	int WindowWidth = *(int*)0x004495E8;
+	int WindowHeight = 0x004495EC;
+	int WindowWidth = 0x004495E8;
 
-	HWND mainHWND = *(HWND*)0x0048df6c;
+	int mainHWND = 0x0048df6c;
+
+	
 
 } static Addr;
 

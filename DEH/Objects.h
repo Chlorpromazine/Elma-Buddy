@@ -2,19 +2,18 @@
 #include "DEH.h"
 
 
-class objects {
+class Objects {
 
 private:
 	int curObject;
-	char oldLev[8];
-
+	
 public:
-	static objects obj;
-	objects();
+	static Objects obj;
+	Objects();
 
 	struct pos {
 		double x;
-		 double y;
+		double y;
 	};
 
 	enum objType{ Flower = 1, Apple, Killer, Start };
@@ -41,10 +40,11 @@ public:
 
 	std::vector<objStruct*> allObjects;
 	std::unordered_map<int, newProp> allObjectsNewProperties;
+	std::unordered_map<int, newProp> allObjectsNewPropertiesPrev;
 
 	bool reload;
 
-
+	
 	void changeObject(int curObj);
 	void objectActive(int curObj, bool active);
 	void nextObject();
@@ -57,6 +57,10 @@ public:
 
 	void displayObjectNumbers();
 
+	//Display arrow
+	std::vector<std::string> arrowObjectList = { "Off", "Closest Apple", "Closest Flower", "Closest Apple & Flower" };
+	//selected arrow object value
+	int arrowObjectValue = 0;
 	void displayObjectArrow();
 
 	int getClosestObject(objType type);

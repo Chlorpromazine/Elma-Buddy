@@ -12,6 +12,7 @@
 #include <vector>
 #include <map>
 #include <filesystem>
+#include <ctime>
 
 #include "Colors.h"
 #include "CommonAddrs.h"
@@ -26,3 +27,5 @@
 #include "Menu.h"
 #include "Objects.h"
 #include "Stats.h"
+#include "Polygon.h"
+#include "System.h"

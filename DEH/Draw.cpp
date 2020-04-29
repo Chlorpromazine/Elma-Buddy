@@ -242,6 +242,7 @@ void draw::deleteObjectFromArray(char* name)
 double oldTime = 0;
 void draw::updateStats()
 {
+	
 	//Display the apple counter
 	if(Stats::stats.displayAppleCounter)
 		createText("lblApplesCollected", "Apples Collected: " + std::to_string(Stats::stats.getLevAppleCollected()) + "/" + std::to_string(Stats::stats.getLevApplesTotal()), 20, 200, 3);
@@ -280,19 +281,21 @@ void draw::updateStats()
 
 void draw::OptionsScreen(bool show)
 {
+	
 	std::string menuStr;
 	Menu::menuItem* selItem;
 
+
 	//Nothing changed, exit
 	if (!optionsUIChanged) return;
-
+	
 	//Debug::debug.addDebugInfoItem(Debug::debugInfo(std::string("test debug")));
 
 	//Draw the back rectangle at the far right of the screen
-	createRectFill("MainOptionWindow", Colors.LightGray, 20, Addr.WindowHeight - 150, 500, Addr.WindowHeight - (200 + ((Menu::menu.currentMenu->subMenu->size() - 1)*20)), 1, "", show);
+	createRectFill("MainOptionWindow", Colors.LightGray, 20, *(int*)Addr.WindowHeight - 150, 500, *(int*)Addr.WindowHeight - (200 + ((Menu::menu.currentMenu->subMenu->size() - 1)*20)), 1, "", show);
 	
 	//Show the current menu
-	createText("CurrentMenu", Menu::menu.currentMenu->Name, 80, Addr.WindowHeight - 175 , 100, "MainOptionWindow", show);
+	createText("CurrentMenu", Menu::menu.currentMenu->Name, 80, *(int*)Addr.WindowHeight - 175 , 100, "MainOptionWindow", show);
 
 	//Draw all the menu options
 	for (int i = Menu::menu.currentMenu->subMenu->size() - 1; i >= 0; i--)
@@ -306,32 +309,32 @@ void draw::OptionsScreen(bool show)
 		else
 			menuStr = std::string(" ") + std::string(selItem->Name);
 
-		createText(&selItem->Name[0u], menuStr, 40, Addr.WindowHeight - 200 - (20 * i), 100, "MainOptionWindow", show);
+		createText(&selItem->Name[0u], menuStr, 40, *(int*)Addr.WindowHeight - 200 - (20 * i), 100, "MainOptionWindow", show);
 		
 		//draw the value if there is one.
 		switch (selItem->value->Type) 
 		{
 		case Menu::menuValueType::b: //bool
-			createText(&selItem->value->Name[0u], std::string("Off  On"), 240, Addr.WindowHeight - 200 - (20 * i), 100, "MainOptionWindow", show);
+			createText(&selItem->value->Name[0u], std::string("Off  On"), 240, *(int*)Addr.WindowHeight - 200 - (20 * i), 100, "MainOptionWindow", show);
 
 		
 			if(selItem->value->Value == false)
-				createRectFill(&selItem->value->Name[0u], Colors.LightRed, 240, Addr.WindowHeight - 200 - (20 * i), 255, Addr.WindowHeight - 184 - (20 * i), 50, "MainOptionWindow", show);
+				createRectFill(&selItem->value->Name[0u], Colors.LightRed, 240, *(int*)Addr.WindowHeight - 200 - (20 * i), 258, *(int*)Addr.WindowHeight - 184 - (20 * i), 50, "MainOptionWindow", show);
 			else
-				createRectFill(&selItem->value->Name[0u], Colors.LightGreen, 265, Addr.WindowHeight - 200 - (20 * i), 280, Addr.WindowHeight - 184 - (20 * i), 50, "MainOptionWindow", show);
+				createRectFill(&selItem->value->Name[0u], Colors.LightGreen, 265, *(int*)Addr.WindowHeight - 200 - (20 * i), 282, *(int*)Addr.WindowHeight - 184 - (20 * i), 50, "MainOptionWindow", show);
 
 			break;
 
 		case Menu::menuValueType::i: //integer
 
-			createText(&selItem->value->Name[0u], std::to_string(selItem->value->Value), 240, Addr.WindowHeight - 200 - (20 * i), 100, "MainOptionWindow", show);
+			createText(&selItem->value->Name[0u], std::to_string(selItem->value->Value), 240, *(int*)Addr.WindowHeight - 200 - (20 * i), 100, "MainOptionWindow", show);
 
 			break;
 
 		case Menu::menuValueType::a: //Array
 			
 			if(selItem->value->ArrayValue.size() != 0)
-				createText(&selItem->value->Name[0u], selItem->value->ArrayValue[selItem->value->Value], 240, Addr.WindowHeight - 200 - (20 * i), 100, "MainOptionWindow", show);
+				createText(&selItem->value->Name[0u], selItem->value->ArrayValue[selItem->value->Value], 240, *(int*)Addr.WindowHeight - 200 - (20 * i), 100, "MainOptionWindow", show);
 
 			break;
 		}
@@ -348,8 +351,9 @@ void draw::OptionsScreen(bool show)
 
 
 //Draws everything in the current list on the playing screen.
-void draw::drawAllObjectsOnScreen() {
-
+void draw::drawAllObjectsOnScreen() 
+{
+	
 	if (optionsUIChanged) 
 	{
 		DrawingObjects.clear();
@@ -417,7 +421,8 @@ void draw::drawAllObjectsOnScreen() {
 */
 void draw::drawTextScreen(int font, std::string text, int x, int y, int charSpace, int surface)
 {
-	if (surface != playingSurf) 
+	
+	if (surface != *(int*)playingSurf)
 	{
 		std::cout << "Error in textscreen draw function" << std::endl;
 		return;
@@ -444,7 +449,8 @@ void draw::drawTextScreen(int font, std::string text, int x, int y, int charSpac
 
 void draw::drawRectFillScreen(BYTE color,  int x, int y, int x2, int y2, int surface)
 {
-	if (surface != playingSurf)
+	
+	if (surface != *(int*)playingSurf)
 	{
 		std::cout << "Error in drawRect function" << std::endl;
 		return;
@@ -464,7 +470,8 @@ void draw::drawRectFillScreen(BYTE color,  int x, int y, int x2, int y2, int sur
 
 void draw::drawPixel(int x, int y, int color, int surface)
 {
-	if (surface != playingSurf)
+	
+	if (surface != *(int*)playingSurf)
 	{
 		std::cout << "Error in drawPixel function" << std::endl;
 		return;
@@ -486,7 +493,7 @@ void draw::drawPixel(int x, int y, int color, int surface)
 void draw::drawLine(int x1, int y1, int x2, int y2, int color, int surface)
 {
 	
-	if (surface != playingSurf)
+	if (surface != *(int*)playingSurf)
 	{
 		std::cout << "Error in drawLine draw function" << std::endl;
 		return;

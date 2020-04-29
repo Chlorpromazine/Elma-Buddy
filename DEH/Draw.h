@@ -3,9 +3,9 @@
 
 static int TextDrawFunction = 0x00401340;
 static int RectFillDrawFunction = 0x00429580;
-static int fontText = *(int*)0x00499164;
-static int playingSurf = *(int*)0x00454140;
-static int PixelDrawFunction = 0x00429490;// 0x004294F0;// 0x0042A730; //0x00429650;// 0x00429490; // 0x004294F0; //0x0042A6A0;
+static int fontText = 0x00499164;
+static int playingSurf = 0x00454140;
+static int PixelDrawFunction = 0x00429490;
 
 class draw {
 private:
@@ -94,7 +94,7 @@ public:
 
 	void drawPixel(int x, int y, int color, int surface);
 	
-	void drawLine(int x1, int y1, int x2, int y2, int color, int surface = playingSurf);
+	void drawLine(int x1, int y1, int x2, int y2, int color, int surface = *(int*)playingSurf);
 
 	void createLineArrow(int x1, int y1, int x2, int y2, int color, double maxLength = -1, double minLength = -1);
 
@@ -105,19 +105,19 @@ public:
 	
 
 	//todo: struct for parameters would look cleaner. Or class
-	void createText(char* objName, std::string text, int x, int y, int zOrd, char* parent, bool visible = true, int surface = playingSurf, int charSpace = -1000, int font = fontText);
-	void createRectFill(char* objName, BYTE color, int x, int y, int height, int width, int zOrd, char* parent = "", bool visible = true, int surface = playingSurf);
+	void createText(char* objName, std::string text, int x, int y, int zOrd, char* parent, bool visible = true, int surface = *(int*)playingSurf, int charSpace = -1000, int font = *(int*)fontText);
+	void createRectFill(char* objName, BYTE color, int x, int y, int height, int width, int zOrd, char* parent = "", bool visible = true, int surface = *(int*)playingSurf);
 
-	void createLine(char * objName, int x, int y, int x2, int y2, int color, drawType type, double maxLength = -1, double minLength = -1, int zOrd = 1, char * parent = "", bool visible = true, int surface = playingSurf);
+	void createLine(char * objName, int x, int y, int x2, int y2, int color, drawType type, double maxLength = -1, double minLength = -1, int zOrd = 1, char * parent = "", bool visible = true, int surface = *(int*)playingSurf);
 
 
-	void createCircle(char* objName, int x, int y, int rad, int color, int zOrd = 1, char* parent = "", bool visible = true, int surface = playingSurf);
+	void createCircle(char* objName, int x, int y, int rad, int color, int zOrd = 1, char* parent = "", bool visible = true, int surface = *(int*)playingSurf);
 
 	void deleteObjectFromArray(char* name);
 
 
 
-	SIZE getSizeString(char* c, HFONT h);
+	//SIZE getSizeString(char* c, HFONT h);
 
 	std::list<drawObject> DrawingObjects;
 	std::list<drawObject> DrawingObjectsBuffer;

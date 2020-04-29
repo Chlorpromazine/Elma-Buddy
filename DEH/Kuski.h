@@ -28,7 +28,7 @@ private:
 	std::vector<bikePoints> prevKuskiRide;
 	std::vector<bikePoints> kuskiRide;
 	int currentFPS = 0;
-
+	double delayOfDeathMS = 1000;
 
 public:
 	static Kuski kus;
@@ -37,16 +37,34 @@ public:
 	enum  { bikePosY = 0x00453A28, lWheelPosY = 0x00453A90, rWheelPosY = 0x00453Af8, headPosY = 0x00453b38 };
 
 	
-	bool enableKuskiShadow = true;
+	//Invulnerability
+	std::vector<std::string> invulnerabilityList = { "None", "To Killers", "To Floor", "To All" };
+	//selected invulnerabily value
+	int invulnerabilityValue = 0;
 
-	void toggleInvulnerability(bool toggle);
+	void toggleInvulnerability(int toggle);
 	void toggleInvulnerabilityFloor(bool toggle);
 	void toggleInvulnerabilityKillers(bool toggle);
 
+
+	//Acceleration
 	void accelerationOfKuski(double speed);
+
+
+	//Shadow Kuski
+	std::vector<std::string> shadowKuskiList = { "Off", "Last Played", "Best Completed Time" };
+	//selected shadow kuski value
+	int shadowKuskiValue = 0;
+	int prevShadowKuskiValue = 0;
+	int shadowLastBestTime = 0;
+	int shadowCurrentTime = 0;
 
 	void shadowKuski();
 	void saveCurrentRide();
+	void setDeathDelay(int ms);
+
+
+	//On exit/enter
 	void onExitLevel();
 	void enterNewLevel();
 };

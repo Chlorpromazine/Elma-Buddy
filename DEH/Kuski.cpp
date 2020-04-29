@@ -2,10 +2,31 @@
 
 Kuski Kuski::kus;
 
-void Kuski::toggleInvulnerability(bool toggle)
+void Kuski::toggleInvulnerability(int toggle)
 {
-	toggleInvulnerabilityFloor(toggle);
-	toggleInvulnerabilityKillers(toggle);
+	switch (toggle) {
+	case 0://off
+		toggleInvulnerabilityFloor(false);
+		toggleInvulnerabilityKillers(false);
+		break;
+	case 1://killer
+		toggleInvulnerabilityFloor(false);
+		toggleInvulnerabilityKillers(true);
+		break;
+	case 2://head
+		toggleInvulnerabilityFloor(true);
+		toggleInvulnerabilityKillers(false);
+		break;
+	case 3://both
+		toggleInvulnerabilityFloor(true);
+		toggleInvulnerabilityKillers(true);
+		break;
+	default:
+		toggleInvulnerabilityFloor(false);
+		toggleInvulnerabilityKillers(false);
+		break;
+	}
+	
 }
 
 void Kuski::toggleInvulnerabilityFloor(bool toggle)
@@ -73,13 +94,19 @@ void Kuski::shadowKuski()
 	const int sizeHead = 12;
 	const int sizeBike = 5;
 	const int screenSize = 48;
-	const int centerBikeX = Addr.WindowWidth / 2 - *(double*)bikePosX * screenSize;
-	const int centerBikeY = Addr.WindowHeight / 2 - *(double*)bikePosY * screenSize;
+	const int centerBikeX = *(int*)Addr.WindowWidth / 2 - *(double*)bikePosX * screenSize;
+	const int centerBikeY = *(int*)Addr.WindowHeight / 2 - *(double*)bikePosY * screenSize;
 
+	//check for desyncs (if the player alt tabs or if the game lags)
+	int realGameFPS = *(int*)(Level::lev.timeAddress + 0x38) * 4;
+	//correct the desync
+	if (realGameFPS > currentFPS) currentFPS = realGameFPS;
+	
 	//Go to the last fps if we ended the replay
-	if (currentFPS == prevKuskiRide.size() && currentFPS != 0) currentFPS--;
+	if (currentFPS >= prevKuskiRide.size() && currentFPS != 0) currentFPS = prevKuskiRide.size()-1;
 
-	if (currentFPS < prevKuskiRide.size() && enableKuskiShadow)
+	//Show the bike on the next frame
+	if (currentFPS < prevKuskiRide.size() && shadowKuskiValue)
 	{
 		int lWheelX = prevKuskiRide[currentFPS].lWheel.x * screenSize + centerBikeX;
 		int lWheelY = prevKuskiRide[currentFPS].lWheel.y * screenSize + centerBikeY;
@@ -101,15 +128,14 @@ void Kuski::shadowKuski()
 
 		currentFPS++;
 	}
-	else if (!enableKuskiShadow)
+	else if (!shadowKuskiValue)
 	{
+		//Hide the shadow kuski
 		draw::dd.createCircle("lWheelShadow", 0, 0, 0, 0);
 		draw::dd.createCircle("rWheelShadow", 0, 0, 0, 0);
 		draw::dd.createCircle("headShadow", 0, 0, 0, 0);
 		draw::dd.createCircle("bodyShadow", 0, 0, 0, 0);
 	}
-	
-	
 }
 
 void Kuski::saveCurrentRide()
@@ -121,19 +147,64 @@ void Kuski::saveCurrentRide()
 	currentLocation.head = coord(*(double*)headPosX, *(double*)headPosY);
 
 	kuskiRide.push_back(currentLocation);
-	
 }
+
+void Kuski::setDeathDelay(int ms)
+{
+	delayOfDeathMS = (double)ms;
+
+	//Get the address of my variable
+	unsigned int addr = (int)&delayOfDeathMS;
+
+	//Replace fmul qword ptr [004472A8] with fmul qword ptr [addr] (don't need to change the first 2 bytes as they are the same)
+	MemPatchInt((BYTE*)0x0041F6BF, &addr, 4);
+
+}
+
 
 void Kuski::onExitLevel()
 {
-	prevKuskiRide = kuskiRide;
-	kuskiRide.clear();
+	
 	currentFPS = 0;
+
+	//Check if last shadow replay was faster. (save it if so)
+	if (shadowKuskiValue == 2) //Best time
+	{
+		if (shadowLastBestTime != 0 && shadowCurrentTime < shadowLastBestTime) //if we got a best time, save the shadow
+		{
+			shadowLastBestTime = shadowCurrentTime;
+			prevKuskiRide = kuskiRide;
+			
+		}
+		else
+		{
+			kuskiRide.clear();
+		}
+	}
+	else //0 or 1, clear the ride every time
+	{
+		prevKuskiRide = kuskiRide;
+		kuskiRide.clear();
+	}
+
+	
 }
 
 void Kuski::enterNewLevel()
 {
+	
+	//Clear shadow kuski
+	shadowLastBestTime = 0;
+	shadowCurrentTime = 0;
 	kuskiRide.clear();
 	prevKuskiRide.clear();
 	currentFPS = 0;
+
+	//reset the finish/death stats on new level
+	Stats::stats.currentLevelEsc = 0;
+	Stats::stats.currentLevelDeaths = 0;
+	Stats::stats.currentLevelFinish = 0;
+
+	Objects::obj.allObjectsNewPropertiesPrev.clear();
+	
 }

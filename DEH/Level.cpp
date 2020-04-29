@@ -9,9 +9,7 @@ void Level::initLevel()
 
 void Level::changeLGR()
 {
-	
 	strcpy((char*)LGRNameAddr, LGRlist[LGRselected].c_str());
-	
 }
 
 //The only way to get the lgr is to just check the LGR folder where the .exe is located
@@ -66,7 +64,6 @@ void Level::getLGRlist()
 
 int Level::findIndexLGR(std::string LGRname)
 {
-
 	std::transform(LGRname.begin(), LGRname.end(), LGRname.begin(), ::tolower);
 
 	int pos = std::distance(LGRlist.begin(), std::find(LGRlist.begin(), LGRlist.end(), LGRname));
@@ -78,7 +75,6 @@ int Level::findIndexLGR(std::string LGRname)
 
 double Level::getTimeInLevel()
 {
-	
 	return *(int*)(timeAddress+0x38) / *(double*)framesPerSecond;
 }
 

@@ -16,72 +16,56 @@
 //#include "Level.h"
 
 bool run;
-MSG msg = {0};
 
 
-//__declspec(dllimport)  DWORD WINAPI mainLoop(LPVOID lpParam);
-
-DWORD WINAPI mainLoop(LPVOID lpParam)
+extern "C" __declspec(dllexport) DWORD mainLoop(LPVOID lpParam)
 {
 	run = true;
 	
+
+	//Add hook for keybord presses
+	Hotkeys::HK.SetHook();
+
+	//Initialize the level
+	Level::lev.initLevel();
+
+	//Initialize the menu.
+	Menu::menu.initMenu();
+
+	//Initialize the stats
+	Stats::stats.initPatch();
+
+	//Load all other hooks
+	loadHooks();
+
 	
-	try{
-	
-		//Add hook for keybord presses
-		Hotkeys::HK.SetHook();
-
-		//Initialize the level
-		Level::lev.initLevel();
-
-		//Initialize the menu.
-		Menu::menu.initMenu();
-
-		//Initialize the stats
-		Stats::stats.initPatch();
-
-		loadHooks();
-		
-		while (run) 
-		{
-			
-			switch (*(int*)Addr.CurrentScreen)
-			{
-
-				
-				case 0: //menu
-					draw::dd.optionsUIactive = false;
-					draw::dd.optionsUIChanged = true;
-					//draw::dd.OptionsScreen(draw::dd.optionsUIactive);
-					break;
-				case 1: //main game
-				case 3: //in editor level
-					
-					
-					//Hotkeys::HK.processKeysInLev();
-					
-				
-					//draw::dd.OptionsScreen(draw::dd.optionsUIactive);
-
-					
-					//draw::dd.updateStats();
-
-
-					break;
-				case 2: //replay
-					draw::dd.optionsUIactive = false;
-					draw::dd.optionsUIChanged = true;
-					//draw::dd.OptionsScreen(draw::dd.optionsUIactive);
-					break;
-			}
-
-			Sleep(1);
-
-		}
-	}
-	catch (exception ex) 
+	while (run) 
 	{
-		cout << ex.what();
+		//bs.bs$qv+d9f0
+		//bs.bs$qv+1F18C
+		//bs.bs$qv+27FCA
+		switch (*(int*)Addr.CurrentScreen)
+		{
+
+			case 0: //menu
+				draw::dd.optionsUIactive = false;
+				draw::dd.optionsUIChanged = true;
+			
+				break;
+			case 1: //main game
+			case 3: //in editor level
+
+			
+				break;
+			case 2: //replay
+				draw::dd.optionsUIactive = false;
+				draw::dd.optionsUIChanged = true;
+				//draw::dd.OptionsScreen(draw::dd.optionsUIactive);
+				break;
+		}
+
+		Sleep(1);
+
 	}
 
 	return 0;
@@ -98,9 +82,8 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 	case DLL_PROCESS_ATTACH:
 		RedirectIOToConsole(); //debug
 
-		
 		//Create the main loop thread
-		CreateThread(NULL, 0, mainLoop, 0, 0, NULL);
+		CreateThread(NULL, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(mainLoop), 0, 0, NULL);
 
 		break;
 	case DLL_THREAD_ATTACH:

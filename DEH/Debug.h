@@ -19,6 +19,7 @@ public:
 	};
 	void drawDebugInfo();
 	void addDebugInfoItem(std::string InfoStr) noexcept;
+	void readUnencryptedPacket(int startAddr);
 
 	std::vector<debugInfo> debugInfoVec;
 };

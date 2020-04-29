@@ -16,92 +16,73 @@ void Menu::initMenu()
 
 	currentMenu = mainMenuItem;
 		
-		
-	//General options
-	newsubMenuItem = createMenuItem(mainMenuItem, MenuItemsID::GeneralOptions, std::string("General Options"));
-	//todo: add this line to function above?
-	newsubMenuItem->parent->subMenu->push_back(newsubMenuItem);
-
-
-	//General options submenus
-	newsubMenuItem = createMenuItem(newsubMenuItem, MenuItemsID::Invulnerability, std::string("Invulnerability"), MenuValueID::Invulnerability, menuValueType::b, false);
-	newsubMenuItem->parent->subMenu->push_back(newsubMenuItem);
-
-	newsubMenuItem = createMenuItem(newsubMenuItem->parent, MenuItemsID::testMenu, std::string("test"), MenuValueID::Test, menuValueType::b, false);
-	newsubMenuItem->parent->subMenu->push_back(newsubMenuItem);
-
-	newsubMenuItem = createMenuItem(newsubMenuItem->parent, MenuItemsID::SpeedHack, std::string("Speed Hack"), MenuValueID::SpeedHack, menuValueType::i, 600);
-	newsubMenuItem->parent->subMenu->push_back(newsubMenuItem);
-		
-
-	newsubMenuItem = createMenuItem(newsubMenuItem->parent, MenuItemsID::ChangeLGR, std::string("Change LGR"), MenuValueID::ChangeLGR, menuValueType::a, Level::lev.LGRselected, Level::lev.LGRlist);
-	newsubMenuItem->parent->subMenu->push_back(newsubMenuItem);
-
-
 
 	//Display Options
 	newsubMenuItem = createMenuItem(mainMenuItem, MenuItemsID::DisplayOptions, std::string("Display Options"));
-	newsubMenuItem->parent->subMenu->push_back(newsubMenuItem);
-	
-	//Apple Counter
-	newsubMenuItem = createMenuItem(newsubMenuItem, MenuItemsID::AppleCounter, std::string("Apple Counter"), MenuValueID::AppleCounter, menuValueType::b, false);
-	newsubMenuItem->parent->subMenu->push_back(newsubMenuItem);
-
-	//Finish/Death counter
-	newsubMenuItem = createMenuItem(newsubMenuItem->parent, MenuItemsID::DeathCounter, std::string("Finish/Death Counter"), MenuValueID::DeathCounter, menuValueType::b, false);
-	newsubMenuItem->parent->subMenu->push_back(newsubMenuItem);
-
-	//Show Gravity
-	newsubMenuItem = createMenuItem(newsubMenuItem->parent, MenuItemsID::ShowGravity, std::string("Apple Gravity"), MenuValueID::ShowGravity, menuValueType::b, false);
-	newsubMenuItem->parent->subMenu->push_back(newsubMenuItem);
-		
-	//Show apples taken (for apple battle)
-	newsubMenuItem = createMenuItem(newsubMenuItem->parent, MenuItemsID::TimeAppleTaken, std::string("Time of Apples Taken"), MenuValueID::TimeAppleTaken, menuValueType::b, false);
-	newsubMenuItem->parent->subMenu->push_back(newsubMenuItem);
+	//Display Options submenus
+	createMenuItem(newsubMenuItem, MenuItemsID::AppleCounter, std::string("Apple Counter"), MenuValueID::AppleCounter, menuValueType::b, true);
+	createMenuItem(newsubMenuItem, MenuItemsID::DeathCounter, std::string("Finish/Death Counter"), MenuValueID::DeathCounter, menuValueType::b, true);
+	createMenuItem(newsubMenuItem, MenuItemsID::ShowGravity, std::string("Apple Gravity"), MenuValueID::ShowGravity, menuValueType::b, true);
+	createMenuItem(newsubMenuItem, MenuItemsID::TimeAppleTaken, std::string("Time of Apples Taken"), MenuValueID::TimeAppleTaken, menuValueType::a, Stats::stats.timeAppleTakenValue, Stats::stats.timeAppleTakenList);
+	createMenuItem(newsubMenuItem, MenuItemsID::LineToObject, std::string("Arrows to Objects"), MenuValueID::LineToObject, menuValueType::a, Objects::obj.arrowObjectValue, Objects::obj.arrowObjectList);
+	createMenuItem(newsubMenuItem, MenuItemsID::ShadowKuski, std::string("Shadow Kuski"), MenuValueID::ShadowKuski, menuValueType::a, Kuski::kus.shadowKuskiValue, Kuski::kus.shadowKuskiList);
+	createMenuItem(newsubMenuItem, MenuItemsID::ChatTimestamp, std::string("Chat Timestamp"), MenuValueID::ChatTimestamp, menuValueType::a, System::sys.chatTimestampValue, System::sys.chatTimestampList);
 
 
+	//General options
+	newsubMenuItem = createMenuItem(mainMenuItem, MenuItemsID::GeneralOptions, std::string("General Options"));
+	//General options submenus
+	createMenuItem(newsubMenuItem, MenuItemsID::ChangeLGR, std::string("Change LGR"), MenuValueID::ChangeLGR, menuValueType::a, Level::lev.LGRselected, Level::lev.LGRlist);
+	createMenuItem(newsubMenuItem, MenuItemsID::DeathDelay, std::string("Change Death Delay (MS)"), MenuValueID::DeathDelay, menuValueType::i, 1000, {}, range(0, 1000));
 
 
+	//What if (offline hacks)
+	newsubMenuItem = createMenuItem(mainMenuItem, MenuItemsID::WhatIfs, std::string("What If..."));
+	//What ifs... submenus
+	createMenuItem(newsubMenuItem, MenuItemsID::Invulnerability, std::string("Invulnerability"), MenuValueID::Invulnerability, menuValueType::a, Kuski::kus.invulnerabilityValue, Kuski::kus.invulnerabilityList);
+	createMenuItem(newsubMenuItem, MenuItemsID::SpeedHack, std::string("Speed Hack"), MenuValueID::SpeedHack, menuValueType::i, 600, {}, range(0, 2500));
+
+
+
+	//display the main menu when first opening
 	getOptions(currentMenu);
 
-
 	
-
 }
 
-Menu::menuItem* Menu::createMenuItem(menuItem* parent, MenuItemsID id, std::string Name, MenuValueID ID, menuValueType Type, int Value, std::vector<std::string> arrayVal)
+Menu::menuItem* Menu::createMenuItem(menuItem* parent, MenuItemsID itemsID, std::string Name, MenuValueID valueID, menuValueType Type, int Value, std::vector<std::string> arrayVal, range r )
 {
 	
 	menuItem* newMenuItem = new menuItem;
 	menuValue* newmenuValue = new menuValue;
 
-	try {
-		newmenuValue->ID = ID;
-		newmenuValue->Type = Type;
-		newmenuValue->Name = Name + std::string("Val");
-		newmenuValue->Value = Value;
-		newmenuValue->ArrayValue = arrayVal;
+	//create the menu value
+	newmenuValue->ID = valueID;
+	newmenuValue->Type = Type;
+	newmenuValue->Name = Name + std::string("Val");
+	newmenuValue->Value = Value;
+	newmenuValue->ArrayValue = arrayVal;
+	newmenuValue->Range = r;
 
-		newMenuItem->ID = id;
-		newMenuItem->Name = Name;
-		newMenuItem->subMenu = new std::vector<menuItem*>; //Add submenus after creating the parent menu.
-		newMenuItem->parent = parent;
-		newMenuItem->value = newmenuValue;
+	//create the menu
+	newMenuItem->ID = itemsID;
+	newMenuItem->Name = Name;
+	newMenuItem->subMenu = new std::vector<menuItem*>; //Add submenus after creating the parent menu.
+	newMenuItem->parent = parent;
+	newMenuItem->value = newmenuValue;
 
-	}
-	catch (std::exception ex)
-	{
-		std::cout << ex.what() << std::endl;
-	}
+	if (parent != NULL)
+		parent->subMenu->push_back(newMenuItem);
+
 	return newMenuItem;
 }
 
+//Displays the current menu item
 void Menu::getOptions(menuItem* Menu)
 {
 	menuItem* tmpMenu = Menu;
 	menuItem* selMenu;
 
-	
 	for (int i = 0; i < tmpMenu->subMenu->size(); i++)
 	{
 		selMenu = tmpMenu->subMenu->at(i);
@@ -110,10 +91,9 @@ void Menu::getOptions(menuItem* Menu)
 		
 		getOptions(selMenu);
 	}
-	
 }
 
-
+//go to the next menu
 void Menu::incSelOpt()
 {
 	if (selOpt > 0)
@@ -123,6 +103,7 @@ void Menu::incSelOpt()
 	}
 }
 
+//go to the previous menu
 void Menu::decSelOpt()
 {
 	
@@ -133,52 +114,66 @@ void Menu::decSelOpt()
 	}
 }
 
+//Change the value of the current menu item.
 void Menu::changeValue(int val)
 {
 	menuItem* changedMenu = currentMenu->subMenu->at(selOpt);
-	try 
+	
+	//Exit if it has no value
+	if (changedMenu->value->ID == MenuValueID::None) return;
+
+	switch (changedMenu->value->Type)
 	{
-		//Exit if it has no value
-		if (changedMenu->value->ID == MenuValueID::None) return;
+	case Menu::menuValueType::b:
+			
+		if (val == 1)
+			changedMenu->value->Value = true;
+		else if (val == -1)
+			changedMenu->value->Value = false;
 
-		switch (changedMenu->value->Type)
+		break;
+	case Menu::menuValueType::i:
+
+		//default no ranges
+		if (changedMenu->value->Range.min == 0 && changedMenu->value->Range.max == 0)
 		{
-		case Menu::menuValueType::b:
-			
-			if (val == 1)
-				changedMenu->value->Value = true;
-			else if (val == -1)
-				changedMenu->value->Value = false;
-
-			break;
-		case Menu::menuValueType::i:
-
 			changedMenu->value->Value += val;
-			
-			break;
-
-		case Menu::menuValueType::a:
-
-			if (changedMenu->value->Value < changedMenu->value->ArrayValue.size()-1 && val == 1)
-				changedMenu->value->Value++;
-			else if (changedMenu->value->Value > 0 && val == -1)
-				changedMenu->value->Value--;
-			//page up/down
-			else if (val == 100)
-				changedMenu->value->Value = changedMenu->value->ArrayValue.size() - 1;
-			else if (val == -100)
-				changedMenu->value->Value = 0;
-
 			break;
 		}
 
-		draw::dd.optionsUIChanged = true;
-		getOptions(currentMenu->parent);
+		//check if the value is not bigger or smaller than the ranges
+		if (changedMenu->value->Range.min < (changedMenu->value->Value + val) && changedMenu->value->Range.max >(changedMenu->value->Value + val))
+			changedMenu->value->Value += val;
+		else if(val > 0)
+			changedMenu->value->Value = changedMenu->value->Range.max;
+		else if (val < 0)
+			changedMenu->value->Value = changedMenu->value->Range.min;
+
+		break;
+
+	case Menu::menuValueType::a:
+
+		if (changedMenu->value->Value < changedMenu->value->ArrayValue.size() - 1 && val == 1) //left arrow key
+			changedMenu->value->Value++;
+		else if (val == 1) //roll back
+			changedMenu->value->Value = 0;
+		else if (changedMenu->value->Value > 0 && val == -1) //right arrow key
+			changedMenu->value->Value--;
+		else if (val == -1) //roll back other way
+			changedMenu->value->Value  = changedMenu->value->ArrayValue.size() - 1;
+
+		//page up/down go to last/first
+		else if (val == 100)
+			changedMenu->value->Value = changedMenu->value->ArrayValue.size() - 1;
+		else if (val == -100)
+			changedMenu->value->Value = 0;
+
+		break;
 	}
-	catch(std::exception ex)
-	{ 
-		std::cout << ex.what() << std::endl;
-	}
+
+	draw::dd.optionsUIChanged = true;
+	getOptions(currentMenu->parent);
+
 }
 
 //Patches elma with the new values
@@ -208,7 +203,19 @@ void Menu::saveSettings()
 			Stats::stats.displayAppleGravity = option.second;
 			break;
 		case MenuValueID::TimeAppleTaken:
-			Stats::stats.displayTimeAppleTaken = option.second;
+			Stats::stats.timeAppleTakenValue = option.second;
+			break;
+		case MenuValueID::DeathDelay:
+			Kuski::kus.setDeathDelay(option.second);
+			break;
+		case MenuValueID::LineToObject:
+			Objects::obj.arrowObjectValue = option.second;
+			break;
+		case MenuValueID::ShadowKuski:
+			Kuski::kus.shadowKuskiValue = option.second;
+			break;
+		case MenuValueID::ChatTimestamp:
+			System::sys.chatTimestampValue = option.second;
 			break;
 		}
 	}
@@ -216,12 +223,10 @@ void Menu::saveSettings()
 	Debug::debug.addDebugInfoItem(std::string("Saving settings..."));
 }
 
-/*
-*	Enters the selected submenu.
-*/
+
+//Enters the selected submenu.
 void Menu::enterSubMenu()
 {
-	
 	if ( currentMenu->subMenu->at(selOpt)->subMenu->size() != 0)
 	{
 		subMenuLev++;
@@ -231,9 +236,7 @@ void Menu::enterSubMenu()
 	}
 }
 
-/*
-*	Goes back by one menu if possible.
-*/
+//Goes back by one menu if possible.
 void Menu::exitSubMenu()
 {
 	if (subMenuLev > 1)

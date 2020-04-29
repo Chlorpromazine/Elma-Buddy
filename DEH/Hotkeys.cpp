@@ -32,12 +32,13 @@ LRESULT __stdcall HookCallback(int nCode, WPARAM wParam, LPARAM lParam)
 //Hook the keyboard
 void Hotkeys::SetHook()
 {
+	
 	//Hopefully this is done right
 	//We get the hInstance from dinput.dll then get the main threadID from the main HWND saved from a variable that Milagro made.
 	//We then add a keyboard hook to that.
 	HMODULE dInputMod = LoadLibrary("dinput.dll");
 	
-	if (!(_hook = SetWindowsHookEx(WH_KEYBOARD, HookCallback, dInputMod, (DWORD)GetWindowThreadProcessId(Addr.mainHWND, NULL))))
+	if (!(_hook = SetWindowsHookEx(WH_KEYBOARD, HookCallback, dInputMod, (DWORD)GetWindowThreadProcessId((HWND)*(int*)Addr.mainHWND, NULL))))
 	{
 		std::cout << "Failed to install hook!" << std::endl;
 	}
@@ -118,7 +119,8 @@ void Hotkeys::processKeysInLev(WPARAM wParam)
 		case  0x53: //s
 			if (GetKeyState(VK_MENU) & 0x8000) //alt
 			{
-				Kuski::kus.enableKuskiShadow = !Kuski::kus.enableKuskiShadow;
+				swap(Kuski::kus.prevShadowKuskiValue, Kuski::kus.shadowKuskiValue);
+			
 			}
 			break;
 

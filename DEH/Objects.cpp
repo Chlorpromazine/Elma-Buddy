@@ -1,17 +1,11 @@
 #include "objects.h"
 
-objects objects::obj;
+Objects Objects::obj;
 
-objects::objects() {
+Objects::Objects() {
 
 	//object currently selected
 	curObject = 0;
-
-	//current lev check
-	for (int i = 0; i < 8; i++)
-		oldLev[i] = 0;
-
-	reload = 1;
 	
 }
 
@@ -22,7 +16,7 @@ objects::objects() {
 *	1 = flower, 2 = apple, 3 = killer, 4 = start (only 1 start location or it crashes)
 *	Values other than those crashes the game.
 */
-void objects::changeObject(int curObj)
+void Objects::changeObject(int curObj)
 {
 	if (allObjects.size() > curObj)
 	{
@@ -45,7 +39,7 @@ void objects::changeObject(int curObj)
 *	Start object does nothing.
 *	Killers and flowers will always show but the collision can be removed if toggled off.
 */
-void objects::objectActive(int curObj, bool active)
+void Objects::objectActive(int curObj, bool active)
 {
 	if (allObjects.size() > curObj)
 	{
@@ -68,7 +62,7 @@ void objects::objectActive(int curObj, bool active)
 /*
 *	Selects the next object in the array to be modified.
 */
-void objects::nextObject()
+void Objects::nextObject()
 {
 	if (allObjects.size())
 	{
@@ -106,7 +100,7 @@ void objects::nextObject()
 /*
 *	Moves the selected object to another position using the arrow keys.
 */
-void objects::moveObject(int dir)
+void Objects::moveObject(int dir)
 {
 	if (allObjects.size())
 	{
@@ -134,7 +128,7 @@ void objects::moveObject(int dir)
 /*
 *	Gets the X/Y location of the selected object.
 */
-objects::pos objects::getLocation()
+Objects::pos Objects::getLocation()
 {
 	pos position;
 
@@ -148,7 +142,7 @@ objects::pos objects::getLocation()
 /*
 *	Gets the X/Y location of a choosen object.
 */
-objects::pos objects::getLocation(int obj)
+Objects::pos Objects::getLocation(int obj)
 {
 	pos position;
 
@@ -161,7 +155,7 @@ objects::pos objects::getLocation(int obj)
 /*
 *	Sets the X/Y location of the selected object.
 */
-void objects::newLocation(pos newPos)
+void Objects::newLocation(pos newPos)
 {
 	//copy object location x
 	allObjects[curObject]->x = newPos.x;
@@ -172,9 +166,9 @@ void objects::newLocation(pos newPos)
 }
 
 /*
-*	Displays a number on all of the object. The number is when it first got placed in the editor.
+*	Displays the time that the object was taken
 */
-void objects::displayObjectNumbers()
+void Objects::displayObjectNumbers()
 {
 
 	for (int i = 0; i < allObjects.size(); i++)
@@ -187,23 +181,34 @@ void objects::displayObjectNumbers()
 
 		//todo: change 48 with elma varible for screen size
 		//position of object minus bike position, add window width/height to place in center.
-		int posX = (int)std::round(((double)allObjects[i]->x - *(double*)Kuski::kus.bikePosX) * 48) + Addr.WindowWidth / 2;
-		int posY = (int)std::round(((double)allObjects[i]->y - *(double*)Kuski::kus.bikePosY) * 48) + Addr.WindowHeight / 2;
+		int posX = (int)std::round(((double)allObjects[i]->x - *(double*)Kuski::kus.bikePosX) * 48) + *(int*)Addr.WindowWidth / 2;
+		int posY = (int)std::round(((double)allObjects[i]->y - *(double*)Kuski::kus.bikePosY) * 48) + *(int*)Addr.WindowHeight / 2;
 		
 		//Get the new time of the apple taken
-		if (Stats::stats.displayTimeAppleTaken && allObjects[i]->active == 0 && allObjects[i]->type == objType::Apple)
+		if (Stats::stats.timeAppleTakenValue && allObjects[i]->active == 0 && allObjects[i]->type == objType::Apple)
 		{
-			
-			double tmpBestTime = Level::lev.getTimeInLevel();
-			if (tmpBestTime < allObjectsNewProperties[i].bestTime || allObjectsNewProperties[i].bestTime == 0.0f)
-			{
-				allObjectsNewProperties[i].bestTime = tmpBestTime;
-				allObjectsNewProperties[i].bestTimeStr = Level::lev.decimalTimeToStr(allObjectsNewProperties[i].bestTime);
+			if (Stats::stats.timeAppleTakenValue == 1) {
+				double tmpBestTime = Level::lev.getTimeInLevel();
+				if (tmpBestTime < allObjectsNewProperties[i].bestTime || allObjectsNewProperties[i].bestTime == 0.0f)
+				{
+					allObjectsNewProperties[i].bestTime = tmpBestTime;
+					allObjectsNewProperties[i].bestTimeStr = Level::lev.decimalTimeToStr(allObjectsNewProperties[i].bestTime);
+				}
 			}
+			else if (Stats::stats.timeAppleTakenValue == 2)
+			{
+				double tmpBestTime = Level::lev.getTimeInLevel();
+				if (tmpBestTime < allObjectsNewPropertiesPrev[i].bestTime || allObjectsNewPropertiesPrev[i].bestTime == 0.0f)
+				{
+					allObjectsNewPropertiesPrev[i].bestTime = tmpBestTime;
+					allObjectsNewPropertiesPrev[i].bestTimeStr = Level::lev.decimalTimeToStr(allObjectsNewPropertiesPrev[i].bestTime);
+				}
+			}
+			
 		}
 
 		//display the time of the apple taken if present.
-		if (Stats::stats.displayTimeAppleTaken && allObjectsNewProperties[i].bestTime != 0.0f )
+		if (Stats::stats.timeAppleTakenValue && allObjectsNewProperties[i].bestTime != 0.0f )
 		{
 			draw::dd.createText(objTimeName, allObjectsNewProperties[i].bestTimeStr, posX - 20, posY, 999, "");
 		}
@@ -240,34 +245,45 @@ void objects::displayObjectNumbers()
 	}
 }
 
-void objects::displayObjectArrow() 
+void Objects::displayObjectArrow() 
 {
+	draw::dd.deleteObjectFromArray("closestFlower");
+	draw::dd.deleteObjectFromArray("closestApple");
+
 	//display arrow to closest apple/flower
-	int closestApple = objects::obj.getClosestObject(objects::objType::Apple);
+	if (Objects::obj.arrowObjectValue != 0) {
+	
+		if (Objects::obj.arrowObjectValue != 2) {
 
-	if (closestApple == -1) draw::dd.deleteObjectFromArray("closestApple");
-	if (closestApple != -1)
-		draw::dd.createLine("closestApple", Addr.WindowWidth / 2, Addr.WindowHeight / 2,
-		(objects::obj.allObjects[closestApple]->x - *(double*)Kuski::kus.bikePosX) * 48 + Addr.WindowWidth / 2,
-			(objects::obj.allObjects[closestApple]->y - *(double*)Kuski::kus.bikePosY) * 48 + Addr.WindowHeight / 2,
-			Colors.Red, draw::drawType::LineArrow, 200);
+			int closestApple = Objects::obj.getClosestObject(Objects::objType::Apple);
 
-	int closestFlower = objects::obj.getClosestObject(objects::objType::Flower);
+			if (closestApple != -1)
+				draw::dd.createLine("closestApple", *(int*)Addr.WindowWidth / 2, *(int*)Addr.WindowHeight / 2,
+				(Objects::obj.allObjects[closestApple]->x - *(double*)Kuski::kus.bikePosX) * 48 + *(int*)Addr.WindowWidth / 2,
+					(Objects::obj.allObjects[closestApple]->y - *(double*)Kuski::kus.bikePosY) * 48 + *(int*)Addr.WindowHeight / 2,
+					Colors.Red, draw::drawType::LineArrow, 200);
+		}
+		
+		if (Objects::obj.arrowObjectValue != 1) {
 
-	if (closestFlower == -1) draw::dd.deleteObjectFromArray("closestFlower");
-	if (closestFlower != -1)
-		draw::dd.createLine("closestFlower", Addr.WindowWidth / 2, Addr.WindowHeight / 2,
-		(objects::obj.allObjects[closestFlower]->x - *(double*)Kuski::kus.bikePosX) * 48 + Addr.WindowWidth / 2,
-			(objects::obj.allObjects[closestFlower]->y - *(double*)Kuski::kus.bikePosY) * 48 + Addr.WindowHeight / 2,
-			Colors.White, draw::drawType::LineArrow, 200);
+			int closestFlower = Objects::obj.getClosestObject(Objects::objType::Flower);
+
+			if (closestFlower != -1)
+				draw::dd.createLine("closestFlower", *(int*)Addr.WindowWidth / 2, *(int*)Addr.WindowHeight / 2,
+				(Objects::obj.allObjects[closestFlower]->x - *(double*)Kuski::kus.bikePosX) * 48 + *(int*)Addr.WindowWidth / 2,
+					(Objects::obj.allObjects[closestFlower]->y - *(double*)Kuski::kus.bikePosY) * 48 + *(int*)Addr.WindowHeight / 2,
+					Colors.White, draw::drawType::LineArrow, 200);
+		}
+	}
+	
 }
-int objects::getClosestObject(objType type)
+int Objects::getClosestObject(objType type)
 {
 	double closestDist = 9999999;
 	double currentDist = 0;
 	int closestApple = -1;
 	
-
+	
 	for (int i = 0; i < allObjects.size(); i++) 
 	{
 		//Must be same type and active

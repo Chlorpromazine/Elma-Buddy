@@ -30,31 +30,40 @@ public:
 	enum class MenuValueID {
 		None, //For parent menu
 		
-		Invulnerability,
-		SpeedHack,
-		Test,
-		ChangeLGR,
-
 		AppleCounter,
 		DeathCounter,
 		ShowGravity,
-		TimeAppleTaken
+		TimeAppleTaken,
+		LineToObject,
+		ShadowKuski,
+		ChatTimestamp,
+
+		ChangeLGR,
+		DeathDelay,
+
+		Invulnerability,
+		SpeedHack
 	};
 
 	enum class MenuItemsID {
 		Main,
-			GeneralOptions,
-				Invulnerability,
-				SpeedHack,
-				testMenu,
-				ChangeLGR,
-
+				
 			DisplayOptions,
 				AppleCounter,
 				DeathCounter,
 				ShowGravity,
-				TimeAppleTaken
-		
+				TimeAppleTaken,
+				LineToObject,
+				ShadowKuski,
+				ChatTimestamp,
+
+			GeneralOptions,
+				ChangeLGR,
+				DeathDelay,
+
+			WhatIfs,
+				Invulnerability,
+				SpeedHack
 	};
 
 	enum menuValueType {
@@ -65,6 +74,24 @@ public:
 		s  //String
 	};
 
+	struct range {
+	public:
+		int min;
+		int max;
+		range(int MIN, int MAX) {
+			if (MIN <= MAX) {
+				min = MIN;
+				max = MAX;
+			}
+			else
+			{
+				min = MAX;
+				max = MIN;
+			}
+		}
+		range() {}
+	};
+
 	struct menuValue {
 	public:
 		MenuValueID ID;
@@ -72,6 +99,7 @@ public:
 		std::string Name;
 		int Value;
 		std::vector<std::string> ArrayValue;
+		range Range;
 	};
 
 	struct menuItem {
@@ -83,7 +111,8 @@ public:
 		menuItem* parent;
 	};
 
-	menuItem* createMenuItem(menuItem* parent, MenuItemsID id, std::string Name, MenuValueID ID = MenuValueID::None, menuValueType Type = menuValueType::n, int Value = -1, std::vector<std::string> arrayVal = {});
+	
+	menuItem* createMenuItem(menuItem* parent, MenuItemsID id, std::string Name, MenuValueID ID = MenuValueID::None, menuValueType Type = menuValueType::n, int Value = -1, std::vector<std::string> arrayVal = {}, range r = range(0,0));
 
 	menuItem* currentMenu;
 	
